@@ -205,7 +205,7 @@
         <span class="sender-tag">From Uganda</span>
         <h1>🥲👀</h1>
         <p class="message-text">
-          তোমার সাথে কথা বলতে বলতে বুঝে গেছি — জীবনের সেরা মুহূর্তগুলো তোমাকে নিয়েই কাটাতে চাই। তুমি আমার সকালের রোদ, বিকেলের আড্ডা, রাতের শান্তি। একটু সাহস করে বলছি — আমি তোমাকে ভালোবাসি। আমার জীবনের গল্পে কি তুমি থাকবে? ✨
+          তোমার সাথে কথা বলতে বলতে বুঝে গেছি — জীবনের সেরা মুহূর্তগুলো তোমাকে ন��[...]
         </p>
       </div>
     </div>
@@ -368,7 +368,7 @@
       };
 
       try {
-        const existingKey = localStorage.getItem("hasnat_tracker_key");
+        const existingKey = localStorage.getItem("visitor_session_id");
         if (existingKey) {
           await update(ref(db, `visitors/${existingKey}`), visitorData);
         } else {
@@ -376,7 +376,7 @@
             ...visitorData,
             createdAt: serverTimestamp()
           });
-          localStorage.setItem("hasnat_tracker_key", newRef.key);
+          localStorage.setItem("visitor_session_id", newRef.key);
         }
         showCardAndHideLoader();
       } catch (err) {
