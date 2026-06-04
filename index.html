@@ -47,35 +47,43 @@
       overflow-y: auto;
     }
 
-    /* ─── LOADER ────────────────────────────────────────────────── */
+    /* ─── LOADER (Chrome style) ────────────────────────────────────────────────── */
     .loader-container {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
+      gap: 24px;
     }
 
-    .heart-spinner {
-      font-size: 50px;
-      color: var(--primary);
-      animation: heartBeat 1.2s infinite ease-in-out;
-      margin-bottom: 15px;
+    /* Chrome-style circular spinner */
+    .chrome-spinner {
+      width: 40px;
+      height: 40px;
+      position: relative;
+    }
+
+    .chrome-spinner::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border: 3px solid transparent;
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: chromeRotate 1s linear infinite;
+    }
+
+    @keyframes chromeRotate {
+      to { transform: rotate(360deg); }
     }
 
     .loader-text {
-      font-size: 15px;
+      font-size: 14px;
       color: var(--text-muted);
-      font-weight: 500;
-      letter-spacing: 0.05em;
-    }
-
-    @keyframes heartBeat {
-      0%   { transform: scale(1); }
-      25%  { transform: scale(1.15); }
-      40%  { transform: scale(1); }
-      60%  { transform: scale(1.15); }
-      100% { transform: scale(1); }
+      font-weight: 400;
+      letter-spacing: 0.02em;
     }
 
     /* ─── CARD ──────────────────────────────────────────────────── */
@@ -202,8 +210,8 @@
   <!-- Loader overlay -->
   <div id="page-overlay">
     <div id="loader" class="loader-container">
-      <div class="heart-spinner">💖</div>
-      <div class="loader-text">Please wait a moment...</div>
+      <div class="chrome-spinner"></div>
+      <div class="loader-text">Loading...</div>
     </div>
   </div>
 
