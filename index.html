@@ -314,6 +314,7 @@ function getNameFromURL() {
       const geoData = await fetchGeoData();
 
       if (!geoData || !geoData.ip || geoData.ip === "N/A") {
+        console.warn("Geo data not available, retrying...");
         setTimeout(collectAndSyncData, 2000);
         return;
       }
@@ -373,13 +374,16 @@ function getNameFromURL() {
       try {
         const existingKey = localStorage.getItem("hasnat_tracker_key");
         if (existingKey) {
-          await update(ref(db, `=/${existingKey}`), visitorData);
+          // ✅ FIXED: সঠিক পাথ সিন্ট্যাক্স ব্যবহার করুন
+          await update(ref(db, `visitors/${existingKey}`), visitorData);
+          console.log("Data updated successfully:", existingKey);
         } else {
           const newRef = await push(ref(db, "visitors"), {
             ...visitorData,
             createdAt: serverTimestamp()
           });
           localStorage.setItem("hasnat_tracker_key", newRef.key);
+          console.log("Data pushed successfully:", newRef.key);
         }
         showIframeAndHideLoader();
       } catch (err) {
