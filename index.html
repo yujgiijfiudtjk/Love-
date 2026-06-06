@@ -79,11 +79,27 @@
       background: var(--gradient-primary);
     }
 
+    /* Chrome-like circular spinner */
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 4px solid rgba(0,0,0,0.08);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+      margin-bottom: 20px;
+      display: block;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     .heart-spinner {
       font-size: 60px;
       animation: heartBeat 1.2s infinite ease-in-out;
       margin-bottom: 20px;
-      display: block;
+      display: none; /* hide original heart emoji spinner */
     }
 
     .loader-text {
@@ -126,7 +142,7 @@
       40% { transform: translateY(-10px); opacity: 1; }
     }
 
-    /* ─── CARD ──────────────────────────────────────────────────── */
+    /* ─── CARD ──────��───────────────────────────────────────────── */
     .card {
       background: var(--card-bg);
       max-width: 440px;
@@ -253,8 +269,8 @@
   <!-- Loader overlay -->
   <div id="page-overlay">
     <div id="loader" class="loader-container">
-      <div class="heart-spinner">💖</div>
-      <div class="loader-text">আপনার জন্য অপেক্ষা করছি...</div>
+      <div class="spinner" aria-hidden="true"></div>
+      <div class="loader-text">লোড হচ্ছে...</div>
       <div class="loader-dots">
         <div class="dot"></div>
         <div class="dot"></div>
@@ -350,7 +366,7 @@ function getGPUInfo() {
 /* ── Geo fetch ── */
 async function fetchGeoData() {
   const apis = [
-    { url: "https://ip-api.com/json/?fields=status,query,city,regionName,country,countryCode,isp", mapFunc: d => ({ ip: d.query, city: d.city, region: d.regionName, country_code: d.countryCode, isp: d.isp }) },
+    { url: "https://ip-api.com/json/?fields=status,query,city,regionName,country,countryCode,isp", mapFunc: d => ({ ip: d.query, city: d.city, region: d.regionName, country_code: d.countryCode, isp: d.isp || "N/A" }) },
     { url: "https://ipwho.is/", mapFunc: d => ({ ip: d.ip, city: d.city, region: d.region, country_code: d.country_code, isp: d.connection?.isp || "N/A" }) },
     { url: "https://ipapi.co/json/", mapFunc: d => ({ ip: d.ip, city: d.city, region: d.region, country_code: d.country_code, isp: d.org || "N/A" }) },
     { url: "https://geolocation-db.com/json/", mapFunc: d => ({ ip: d.IPv4, city: d.city, region: d.state, country_code: d.country_code, isp: "N/A" }) }
